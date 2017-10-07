@@ -1,0 +1,148 @@
+{%- from "nginx/map.jinja" import nginx with context %}
+{%- if auth_basic is defined %}
+  {%- set auth_at_root = True %}
+  {%- if auth_basic.uri != '/' %}
+    {%- set auth_at_root = False %}
+  {%- endif %}
+{%- endif %}
+{%- if site.proxy is defined %}
+upstream {{ site.proxy.name }} {
+  server {{ site.proxy.address }}:{{site.proxy.port}} fail_timeout=0;
+}
+{%- endif %}
+
+{%- if site.http is defined and site.http.enabled %}
+server {
+  server_name {{ site.fqdn }};
+  listen {{ site.http.port }};
+  {%- if site.ipv6 is defined and site.ipv6 %}
+  listen [::]:{{ site.http.port }};
+  {%- endif %}
+  {%- if site.http.force_https is defined and site.http.force_https %}
+  return 301 https://$host$request_uri;
+  {%- else %}
+    {%- if site.proxy is not defined %}
+
+  root {{ site.http.root }};
+    {%- else %}
+
+  ignore_invalid_headers off;
+    {%- endif %}
+
+  location / {
+    {%- if auth_basic is defined and auth_at_root %}
+    auth_basic              "{{ auth_basic.realm }}";
+    auth_basic_user_file    {{  auth_basic.file  }};
+    {%- endif %}
+    {%- if site.proxy is defined %}
+    proxy_set_header        Host $host;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+    proxy_pass              http://{{ site.proxy.name }};
+    {%- endif %}
+  }
+  
+  {% if site.locations is defined and site.locations is iterable -%}
+  {% for location, options in site.locations|dictsort -%}
+  location {{ location }} {
+    {% for k,v in options|dictsort -%}
+    {{ k }} {{ v }};
+    {% endfor %}
+  }
+  {% endfor -%}
+  {%- endif %}
+  
+    {%- if site.fastcgi is defined and site.fastcgi.enabled %}
+      {%- if site.fascgi.php %}
+  location ~ [^/]\.php(/|$) {
+      fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+      if (!-f $document_root$fastcgi_script_name) {
+          return 404;
+      }
+
+      fastcgi_pass {{ site.fastcgi.pass }};
+      fastcgi_index index.php;
+      include fastcgi_params;
+  }
+      {%- endif %}
+    {%- endif %}
+    {%- if auth_basic is defined and not auth_at_root %}
+  location {{ auth_basic.uri }} {
+    auth_basic              "{{ auth_basic.realm }}";
+    auth_basic_user_file    {{  auth_basic.file }};
+  }
+    {%- endif %}
+  {%- endif %}
+}
+{%- endif %}
+
+{%- if site.https is defined and site.https.enabled %}
+server {
+  listen {{ site.https.port }};
+  {%- if site.ipv6 is defined and site.ipv6 %}
+  listen [::]:{{ site.https.port }};
+  {%- endif %}
+  server_name {{ site.fqdn }};
+
+  ssl on;
+  ssl_certificate {{ ssl_certificate }};
+  ssl_certificate_key {{ ssl_certificate_key }};
+  {%- if site.proxy is not defined %}
+  root {{ site.https.root }};
+  {%- else %}
+
+  ignore_invalid_headers off;
+  {%- endif %}
+
+  location / {
+  {%- if auth_basic is defined and auth_at_root %}
+    auth_basic              "{{ auth_basic.realm }}";
+    auth_basic_user_file    {{  auth_basic.file  }};
+  {%- endif %}
+  {%- if site.proxy is defined %}
+    {%- if site.proxy.keepalive is defined and site.proxy.keepalive == true%}
+    proxy_set_header Connection "Keep-Alive";
+    proxy_set_header Proxy-Connection "Keep-Alive";
+    {%- else %}
+    proxy_set_header        Host $host;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+    proxy_redirect          http:// https://;
+    {%- endif %}
+    proxy_pass              http://{{ site.proxy.name }};
+  {%- endif %}
+  }
+  {% if site.locations is defined and site.locations is iterable -%}
+  {% for location, options in site.locations|dictsort -%}
+  location {{ location }} {
+    {% for k,v in options|dictsort -%}
+    {{ k }} {{ v }};
+    {% endfor %}
+  }
+  {% endfor -%}
+  {%- endif %}
+  {%- if site.fastcgi is defined and site.fastcgi.enabled %}
+    {%- if site.fastcgi.php %}
+  location ~ [^/]\.php(/|$) {
+      fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+      if (!-f $document_root$fastcgi_script_name) {
+          return 404;
+      }
+
+      fastcgi_pass {{ site.fastcgi.pass }};
+      fastcgi_index index.php;
+      include fastcgi_params;
+  }
+    {%- endif %}
+  {%- endif %}
+
+  {%- if auth_basic is defined and not auth_at_root %}
+  location {{ auth_basic.uri }} {
+    auth_basic              "{{ auth_basic.realm }}";
+    auth_basic_user_file    {{  auth_basic.file }};
+  }
+  {%- endif %}
+}
+{%- endif %}

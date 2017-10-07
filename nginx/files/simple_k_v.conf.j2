@@ -1,0 +1,14 @@
+# vim: set et ts=4 sw=4 tw=80 ft=nginx :
+##
+## NGINX {{ config.header_comment }}
+##
+
+{% for k, v in config.globals.iteritems() -%}
+{% if v is list -%}
+{% for i in v -%}
+{{ k.ljust(28) }} {{ i }};
+{% endfor -%}
+{% else -%}
+{{ k.ljust(28) }} {{ v }};
+{% endif -%}
+{% endfor %}

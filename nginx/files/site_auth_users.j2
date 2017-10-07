@@ -1,0 +1,6 @@
+{%- for user, auth in users.iteritems() %}
+{%- set passwd = auth['passwd']                     %}
+{%- set scheme = auth.get('passwd_scheme', 'plain') %}
+{%- set scheme = scheme.upper()                     %}
+{{ user }}:{{ '{' }}{{ scheme }}{{ '}' }}{{ passwd }}
+{%- endfor %}

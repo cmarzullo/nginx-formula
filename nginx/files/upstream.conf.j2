@@ -1,0 +1,20 @@
+# vim: set et ts=4 sw=4 tw=80 ft=nginx :
+##
+## NGINX {{ config.header_comment }}
+##
+
+{% for k, v in config.upstreams.iteritems() -%}
+{% if v.comment is defined -%}
+# {{ v.comment }}
+{% endif -%}
+upstream {{ k }} {
+{% if v.ip_hash is defined %}{% if v.ip_hash %}
+       ip_hash;
+{% endif %}{% endif -%}
+
+{% for server in v.servers %}
+       server {{ server }};
+{%- endfor %}
+}
+
+{% endfor %}

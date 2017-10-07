@@ -1,0 +1,17 @@
+# vim: set et ts=4 sw=4 tw=80 ft=nginx :
+##
+## NGINX {{ config.header_comment }}
+##
+
+# List of IP ranges granted access to restricted sites
+# when included this should be followed with 'deny all'
+#
+# This config lives in conf.d/acl to prevent getting
+# included as part of the conf.d/*conf wildcard include.
+
+{% for k, acls in config.acls.iteritems() -%}
+# {{ k }}
+{% for acl in acls -%}
+allow {{ acl }};
+{% endfor %}
+{% endfor %}
