@@ -4,7 +4,7 @@ configure nginx. Allows for multiple sites broken into multiple config files.  P
 
 You can toggle the ability to listen on IPv6 per site.
 
-##HTTP
+## HTTP
 ```
 nginx:
   enabled: True
@@ -22,7 +22,7 @@ nginx:
         force_https: False
 ```
 
-##HTTPS with redirect
+## HTTPS with redirect
 This is configured to use <fqdn>.crt and <fqdn>.key as the certificate and key, when HTTPS is enabled.  
 When HTTPS certificates will be managed by a different state, make sure to set manage_cert to False.
 ```
@@ -46,7 +46,7 @@ nginx:
         manage_cert: False
 ```
 
-##HTTPS Reverse Proxy
+## HTTPS Reverse Proxy
 ```
 nginx:
   enabled: True
@@ -71,7 +71,7 @@ nginx:
         port: 8080
 ```
 
-##PHP via FastCGI with FPM-CGI Library
+## PHP via FastCGI with FPM-CGI Library
 ```
 nginx:
   enabled: True
@@ -97,7 +97,7 @@ nginx:
         pass: unix:/var/run/php5-fpm.sock
 ```
 
-##PHP via FastCGI with CGI Library
+## PHP via FastCGI with CGI Library
 ```
 nginx:
   enabled: True
