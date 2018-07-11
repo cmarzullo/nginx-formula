@@ -5,9 +5,3 @@ nginx:
   enabled: False
   required_pkgs:
     - nginx
-  conf_source: 'salt://nginx/files/nginx.conf.j2'
-  service:
-    name: nginx
-    state: dead
-    enable: False
-    user: www-data

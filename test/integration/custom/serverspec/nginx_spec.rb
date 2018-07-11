@@ -30,8 +30,8 @@ describe 'NGINX Sites' do
     it { should be_grouped_into 'root' }
     its(:content) { should match /server_name localhost.local;\s*listen 80;\s*listen \[::\]:80;/ }
     its(:content) { should match /listen 443;\s*listen \[::\]:443;\s*server_name localhost.local;/ }
-    its(:content) { should match /ssl_certificate \/etc\/ssl\/certs/ }
-    its(:content) { should match /ssl_certificate_key \/etc\/ssl\/private/ }
+    its(:content) { should match /ssl_certificate .*localhost.local.crt/ }
+    its(:content) { should match /ssl_certificate_key .*localhost.local.key/ }
     its(:content) { should match /^upstream tomcat {\s*server \[::\]:8080/ }
   end
 
@@ -63,9 +63,14 @@ describe 'NGINX Sites' do
 end
 
 describe 'NGINX Configs' do
-  describe file('/etc/nginx/nginx.conf') do
+  describe file('/etc/nginx/nginx.conf'), :if => os[:family] == 'debian' do
     its(:content) { should match /^user daemon;/ }
     its(:content) { should match /client_max_body_size 100M;/ }
+  end
+
+  describe file('/etc/nginx/nginx.conf'), :if => os[:family] == 'redhat' do
+    its(:content) { should match /^user daemon;/ }
+    its(:content) { should match /include \/etc\/nginx\/sites-enabled\/\*;/ }
   end
 
   describe file('/etc/nginx/conf.d/test/client.conf') do
