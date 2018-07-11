@@ -83,8 +83,14 @@ nginx:
       https:
         port: 443
         #root: /var/www/html
+        {% if grains.os_family == "Debian" %}
         cert_dir: /etc/ssl/certs
         key_dir: /etc/ssl/private
+        {% endif %}
+        {% if grains.os_family == "RedHat" %}
+        cert_dir: /etc/pki/tls/certs
+        key_dir: /etc/pki/tls/private
+        {% endif %}
         enabled: true
       proxy:
         name: tomcat
@@ -126,9 +132,15 @@ nginx:
         port: 443
         root: /var/www/html
         enabled: true
+        {% if grains.os_family == "Debian" %}
         cert_dir: /etc/ssl/certs
-        cert_name: public-authrealm.crt
         key_dir: /etc/ssl/private
+        {% endif %}
+        {% if grains.os_family == "RedHat" %}
+        cert_dir: /etc/pki/tls/certs
+        key_dir: /etc/pki/tls/private
+        {% endif %}
+        cert_name: public-authrealm.crt
         key_name: public-authrealm.key
       auth_basic:
         realm: 'Private area'

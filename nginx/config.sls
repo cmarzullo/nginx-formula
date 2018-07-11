@@ -25,7 +25,7 @@ nginx_config_d_{{ confd_file }}:
     - mode: 0644
     - template: jinja
     - makedirs: true
-    - config: {{ confd_config }}
+    - config: {{ confd_config | yaml}}
     - watch_in:
       - service: nginx_service
 {% endfor %}
@@ -49,7 +49,7 @@ nginx_site_config_{{ site.fqdn }}:
     - group : root
     - mode: 0644
     - template: jinja
-    - site: {{ site }}
+    - site: {{ site | yaml }}
     {% if site.https is defined -%}
       {%- set manage_ssl_certificate   = site.https.get('manage_cert', True)                   -%}
       {%- set ssl_certificate_name     = site.https.get('cert_name', site.fqdn + '.crt')       -%}
@@ -90,6 +90,7 @@ nginx_site_{{ site.fqdn }}_http_root:
     - group: {{ site.http.root_group }}
       {%- endif %}
     - mode: 0700
+    - makedirs: True
     {% endif %}
 
     {% if site.https is defined %}
@@ -102,6 +103,7 @@ nginx_site_{{ site.fqdn }}_https_root:
     - group: {{ site.https.root_group }}
       {%- endif %}
     - mode: 0700
+    - makedirs: True
       {% endif %}
 
       {% if manage_ssl_certificate %}

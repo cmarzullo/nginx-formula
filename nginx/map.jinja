@@ -10,10 +10,24 @@ Setup variable using grains['os_family'] based logic, only add key:values here
 that differ from whats in defaults.yml
 ##}
 {% set os_family_map = salt['grains.filter_by']({
-        'Debian': {},
+        'Debian': {
+          'service': {
+            'name': 'nginx',
+            'enable': 'False',
+            'user': 'www-data',
+            'state': 'dead'},
+          'conf_source': 'salt://nginx/files/nginx.conf.Debian.j2'
+         },
         'Suse': {},
         'Arch': {},
-        'RedHat': {},
+        'RedHat': {
+          'service': {
+            'name': 'nginx',
+            'enable': 'False',
+            'user': 'nginx',
+            'state': 'dead'},
+          'conf_source': 'salt://nginx/files/nginx.conf.RedHat.j2'
+        }
   }
   , grain="os_family"
   , merge=salt['pillar.get']('nginx:lookup'))
